@@ -139,11 +139,11 @@ void setup(){
   FuzzyRuleAntecedent* ifLijeviSrednjeAndSrednjiSrednjeAndDesniSrednje = new FuzzyRuleAntecedent();
   ifLijeviSrednjeAndSrednjiSrednjeAndDesniSrednje->joinWithAND(lijeviSrednjeAndSrednjiSrednje, srednjeD);
 
-  FuzzyRuleConsequent* thenTransBrzinaSporoAndRotBrzinaBrzoL = new FuzzyRuleConsequent();
-  thenTransBrzinaSporoAndRotBrzinaBrzoL->addOutput(sporo);
-  thenTransBrzinaSporoAndRotBrzinaBrzoL->addOutput(brzoL);
+  FuzzyRuleConsequent* thenTransBrzinaSporoAndRotBrzinaNula = new FuzzyRuleConsequent();
+  thenTransBrzinaSporoAndRotBrzinaNula->addOutput(sporo);
+  thenTransBrzinaSporoAndRotBrzinaNula->addOutput(nula);
 
-  FuzzyRule* pravilo3 = new FuzzyRule(3, ifLijeviSrednjeAndSrednjiSrednjeAndDesniSrednje, thenTransBrzinaSporoAndRotBrzinaBrzoL);
+  FuzzyRule* pravilo3 = new FuzzyRule(3, ifLijeviSrednjeAndSrednjiSrednjeAndDesniSrednje, thenTransBrzinaSporoAndRotBrzinaNula);
   izbjegavanje->addFuzzyRule(pravilo3);
  
  // Pravilo 4
@@ -152,11 +152,11 @@ void setup(){
   FuzzyRuleAntecedent* ifLijeviSrednjeAndSrednjiSrednjeAndDesniDaleko = new FuzzyRuleAntecedent();
   ifLijeviSrednjeAndSrednjiSrednjeAndDesniDaleko->joinWithAND(lijeviSrednjeAndSrednjiSrednje, dalekoD);
 
-  FuzzyRuleConsequent* thenTransBrzinaSporoAndRotBrzinaSporoD = new FuzzyRuleConsequent();
-  thenTransBrzinaSporoAndRotBrzinaSporoD->addOutput(sporo);
-  thenTransBrzinaSporoAndRotBrzinaSporoD->addOutput(sporoD);
+  FuzzyRuleConsequent* thenTransBrzinaBrzoAndRotBrzinaSporoD = new FuzzyRuleConsequent();
+  thenTransBrzinaBrzoAndRotBrzinaSporoD->addOutput(brzo);
+  thenTransBrzinaBrzoAndRotBrzinaSporoD->addOutput(sporoD);
 
-  FuzzyRule* pravilo4 = new FuzzyRule(4, ifLijeviSrednjeAndSrednjiSrednjeAndDesniDaleko, thenTransBrzinaSporoAndRotBrzinaSporoD);
+  FuzzyRule* pravilo4 = new FuzzyRule(4, ifLijeviSrednjeAndSrednjiSrednjeAndDesniDaleko, thenTransBrzinaBrzoAndRotBrzinaSporoD);
   izbjegavanje->addFuzzyRule(pravilo4);
   
   // Pravilo 5
@@ -165,11 +165,11 @@ void setup(){
   FuzzyRuleAntecedent* ifLijeviDalekoAndSrednjiSrednjeAndDesniSrednje = new FuzzyRuleAntecedent();
   ifLijeviDalekoAndSrednjiSrednjeAndDesniSrednje->joinWithAND(lijeviDalekoAndSrednjiSrednje, srednjeD);
 
-  FuzzyRuleConsequent* thenTransBrzinaSporoAndRotBrzinaSporoL = new FuzzyRuleConsequent();
-  thenTransBrzinaSporoAndRotBrzinaSporoL->addOutput(sporo);
-  thenTransBrzinaSporoAndRotBrzinaSporoL->addOutput(sporoL);
+  FuzzyRuleConsequent* thenTransBrzinaBrzoAndRotBrzinaSporoL = new FuzzyRuleConsequent();
+  thenTransBrzinaBrzoAndRotBrzinaSporoL->addOutput(brzo);
+  thenTransBrzinaBrzoAndRotBrzinaSporoL->addOutput(sporoL);
 
-  FuzzyRule* pravilo5 = new FuzzyRule(5, ifLijeviDalekoAndSrednjiSrednjeAndDesniSrednje, thenTransBrzinaSporoAndRotBrzinaSporoL);
+  FuzzyRule* pravilo5 = new FuzzyRule(5, ifLijeviDalekoAndSrednjiSrednjeAndDesniSrednje, thenTransBrzinaBrzoAndRotBrzinaSporoL);
   izbjegavanje->addFuzzyRule(pravilo5);
   
   // Pravilo 6
@@ -204,9 +204,9 @@ void setup(){
   FuzzyRuleAntecedent* ifLijeviDalekoAndSrednjiSrednjeAndDesniBlizu = new FuzzyRuleAntecedent();
   ifLijeviDalekoAndSrednjiSrednjeAndDesniBlizu->joinWithAND(lijeviDalekoAndSrednjiSrednje, blizuD);
 
-  //FuzzyRuleConsequent* thenTransBrzinaSporoAndRotBrzinaBrzoL = new FuzzyRuleConsequent();
-  //thenTransBrzinaSporoAndRotBrzinaBrzoL->addOutput(sporo);
- // thenTransBrzinaSporoAndRotBrzinaBrzoL->addOutput(brzoL);
+  FuzzyRuleConsequent* thenTransBrzinaSporoAndRotBrzinaBrzoL = new FuzzyRuleConsequent();
+  thenTransBrzinaSporoAndRotBrzinaBrzoL->addOutput(sporo);
+  thenTransBrzinaSporoAndRotBrzinaBrzoL->addOutput(brzoL);
 
   FuzzyRule* pravilo8 = new FuzzyRule(8, ifLijeviDalekoAndSrednjiSrednjeAndDesniBlizu, thenTransBrzinaSporoAndRotBrzinaBrzoL);
   izbjegavanje->addFuzzyRule(pravilo8);
@@ -217,9 +217,9 @@ void setup(){
   FuzzyRuleAntecedent* ifLijeviDalekoAndSrednjiSrednjeAndDesniDaleko = new FuzzyRuleAntecedent();
   ifLijeviDalekoAndSrednjiSrednjeAndDesniDaleko->joinWithAND(lijeviDalekoAndSrednjiSrednje, dalekoD);
 
-  FuzzyRuleConsequent* thenTransBrzinaSporoAndRotBrzinaNula = new FuzzyRuleConsequent();
-  thenTransBrzinaSporoAndRotBrzinaNula->addOutput(sporo);
-  thenTransBrzinaSporoAndRotBrzinaNula->addOutput(nula);
+  //FuzzyRuleConsequent* thenTransBrzinaSporoAndRotBrzinaNula = new FuzzyRuleConsequent();
+  //thenTransBrzinaSporoAndRotBrzinaNula->addOutput(sporo);
+  //thenTransBrzinaSporoAndRotBrzinaNula->addOutput(nula);
 
   FuzzyRule* pravilo9 = new FuzzyRule(9, ifLijeviDalekoAndSrednjiSrednjeAndDesniDaleko, thenTransBrzinaSporoAndRotBrzinaNula);
   izbjegavanje->addFuzzyRule(pravilo9);
@@ -300,17 +300,18 @@ void loop(){
   distanceC = (durationC/2) * 0.034;
   distanceD = (durationD/2) * 0.034;
   
-  izbjegavanje->setInput(1,50);  
-  izbjegavanje->setInput(2,0);  
+  izbjegavanje->setInput(1,150);  
+  izbjegavanje->setInput(2,50);  
   izbjegavanje->setInput(3,50);
   
   izbjegavanje->fuzzify();
+Serial.print(brzoD->getPertinence());Serial.print(" ");Serial.println(brzoL->getPertinence());
   
   float out_transBrzina = izbjegavanje->defuzzify(1);
   float out_rotBrzina = izbjegavanje->defuzzify(2);
   
  
-  Serial.print("Inputs: "); Serial.print(distanceL); Serial.print(" "); Serial.print(distanceC); Serial.print(" "); Serial.println(distanceD);
+//  Serial.print("Inputs: "); Serial.print(distanceL); Serial.print(" "); Serial.print(distanceC); Serial.print(" "); Serial.println(distanceD);
   Serial.print("Output transBrzina: "); Serial.print(out_transBrzina); Serial.print(", rotBrzina: "); Serial.println(out_rotBrzina);
   Serial.print("1: "); Serial.println(izbjegavanje->isFiredRule(1));
   
