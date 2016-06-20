@@ -300,40 +300,39 @@ void loop(){
   distanceC = (durationC/2) * 0.034;
   distanceD = (durationD/2) * 0.034;
   
-  izbjegavanje->setInput(1,150);  
-  izbjegavanje->setInput(2,50);  
-  izbjegavanje->setInput(3,50);
+  izbjegavanje->setInput(1,distanceL);  
+  izbjegavanje->setInput(2,distanceC);  
+  izbjegavanje->setInput(3,distanceD);
   
   izbjegavanje->fuzzify();
-Serial.print(brzoD->getPertinence());Serial.print(" ");Serial.println(brzoL->getPertinence());
   
   float out_transBrzina = izbjegavanje->defuzzify(1);
   float out_rotBrzina = izbjegavanje->defuzzify(2);
   
  
-//  Serial.print("Inputs: "); Serial.print(distanceL); Serial.print(" "); Serial.print(distanceC); Serial.print(" "); Serial.println(distanceD);
+  Serial.print("Inputs: "); Serial.print(distanceL); Serial.print(" "); Serial.print(distanceC); Serial.print(" "); Serial.println(distanceD);
   Serial.print("Output transBrzina: "); Serial.print(out_transBrzina); Serial.print(", rotBrzina: "); Serial.println(out_rotBrzina);
-  Serial.print("1: "); Serial.println(izbjegavanje->isFiredRule(1));
-  
-  Serial.print("2: "); Serial.println(izbjegavanje->isFiredRule(2));
-
-  Serial.print("3: "); Serial.println(izbjegavanje->isFiredRule(3));
-
-  Serial.print("4: "); Serial.println(izbjegavanje->isFiredRule(4));
-
-  Serial.print("5: "); Serial.println(izbjegavanje->isFiredRule(5));
-
-  Serial.print("6: "); Serial.println(izbjegavanje->isFiredRule(6));
-
-  Serial.print("7: "); Serial.println(izbjegavanje->isFiredRule(7));
-
-  Serial.print("8: "); Serial.println(izbjegavanje->isFiredRule(8));
-
-  Serial.print("9: "); Serial.println(izbjegavanje->isFiredRule(9));
-  
-  Serial.print("10: "); Serial.println(izbjegavanje->isFiredRule(10));
-  
-  Serial.print("11: "); Serial.println(izbjegavanje->isFiredRule(11));
+//  Serial.print("1: "); Serial.println(izbjegavanje->isFiredRule(1));
+//  
+//  Serial.print("2: "); Serial.println(izbjegavanje->isFiredRule(2));
+//
+//  Serial.print("3: "); Serial.println(izbjegavanje->isFiredRule(3));
+//
+//  Serial.print("4: "); Serial.println(izbjegavanje->isFiredRule(4));
+//
+//  Serial.print("5: "); Serial.println(izbjegavanje->isFiredRule(5));
+//
+//  Serial.print("6: "); Serial.println(izbjegavanje->isFiredRule(6));
+//
+//  Serial.print("7: "); Serial.println(izbjegavanje->isFiredRule(7));
+//
+//  Serial.print("8: "); Serial.println(izbjegavanje->isFiredRule(8));
+//
+//  Serial.print("9: "); Serial.println(izbjegavanje->isFiredRule(9));
+//  
+//  Serial.print("10: "); Serial.println(izbjegavanje->isFiredRule(10));
+//  
+//  Serial.print("11: "); Serial.println(izbjegavanje->isFiredRule(11));
   Serial.println(" ");
 
   delay(2000);
