@@ -214,27 +214,27 @@ void setup(){
   // Pravilo 9
   //FuzzyRuleAntecedent* lijeviDalekoAndSrednjiBlizu = new FuzzyRuleAntecedent();
   //lijeviDalekoAndSrednjiBlizu->joinWithAND(dalekoL, blizuS);
-  FuzzyRuleAntecedent* ifLijeviDalekoAndSrednjiBlizuAndDesniSrednje = new FuzzyRuleAntecedent();
-  ifLijeviDalekoAndSrednjiBlizuAndDesniSrednje->joinWithAND(lijeviDalekoAndSrednjiBlizu, srednjeD);
+  FuzzyRuleAntecedent* ifLijeviDalekoAndSrednjiSrednjeAndDesniDaleko = new FuzzyRuleAntecedent();
+  ifLijeviDalekoAndSrednjiSrednjeAndDesniDaleko->joinWithAND(lijeviDalekoAndSrednjiSrednje, dalekoD);
 
-  //FuzzyRuleConsequent* thenTransBrzinaStaniAndRotBrzinaBrzoL = new FuzzyRuleConsequent();
-  //thenTransBrzinaStaniAndRotBrzinaBrzoL->addOutput(stani);
-  //thenTransBrzinaStaniAndRotBrzinaBrzoL->addOutput(brzoL);
+  FuzzyRuleConsequent* thenTransBrzinaSporoAndRotBrzinaNula = new FuzzyRuleConsequent();
+  thenTransBrzinaSporoAndRotBrzinaNula->addOutput(sporo);
+  thenTransBrzinaSporoAndRotBrzinaNula->addOutput(nula);
 
-  FuzzyRule* pravilo9 = new FuzzyRule(9, ifLijeviDalekoAndSrednjiBlizuAndDesniSrednje, thenTransBrzinaStaniAndRotBrzinaBrzoL);
+  FuzzyRule* pravilo9 = new FuzzyRule(9, ifLijeviDalekoAndSrednjiSrednjeAndDesniDaleko, thenTransBrzinaSporoAndRotBrzinaNula);
   izbjegavanje->addFuzzyRule(pravilo9);
   
   // Pravilo 10
   FuzzyRuleAntecedent* lijeviSrednjeAndSrednjiBlizu = new FuzzyRuleAntecedent();
   lijeviSrednjeAndSrednjiBlizu->joinWithAND(srednjeL, blizuS);
-  FuzzyRuleAntecedent* ifLijeviSrednjeAndSrednjiBlizuAndDesniDaleko = new FuzzyRuleAntecedent();
-  ifLijeviSrednjeAndSrednjiBlizuAndDesniDaleko->joinWithAND(lijeviSrednjeAndSrednjiBlizu, dalekoD);
+  FuzzyRuleAntecedent* ifLijeviSrednjeAndSrednjiBlizuAndDesniSrednje = new FuzzyRuleAntecedent();
+  ifLijeviSrednjeAndSrednjiBlizuAndDesniSrednje->joinWithAND(lijeviSrednjeAndSrednjiBlizu, srednjeD);
 
   //FuzzyRuleConsequent* thenTransBrzinaStaniAndRotBrzinaBrzoD = new FuzzyRuleConsequent();
   //thenTransBrzinaStaniAndRotBrzinaBrzoD->addOutput(stani);
   //thenTransBrzinaStaniAndRotBrzinaBrzoD->addOutput(brzoD);
 
-  FuzzyRule* pravilo10 = new FuzzyRule(10, ifLijeviSrednjeAndSrednjiBlizuAndDesniDaleko, thenTransBrzinaStaniAndRotBrzinaBrzoD);
+  FuzzyRule* pravilo10 = new FuzzyRule(10, ifLijeviSrednjeAndSrednjiBlizuAndDesniSrednje, thenTransBrzinaStaniAndRotBrzinaBrzoD);
   izbjegavanje->addFuzzyRule(pravilo10);  
   
   // Pravilo 11
@@ -302,7 +302,7 @@ void loop(){
   
   izbjegavanje->setInput(1,50);  
   izbjegavanje->setInput(2,0);  
-  izbjegavanje->setInput(3,400);
+  izbjegavanje->setInput(3,50);
   
   izbjegavanje->fuzzify();
   
