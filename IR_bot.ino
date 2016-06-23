@@ -8,17 +8,29 @@
 #include <FuzzySet.h>
 #include <FuzzyRuleAntecedent.h>
 
+#include <SoftwareSerial.h>
+SoftwareSerial HC05(4, 12);
+
 // lijevi senzor
-const int trigPinL = 8;
-const int echoPinL = 9;
+#define echoPinL A4
+#define trigPinL A5
 
 // srednji senzor
-const int trigPinC = 5;
-const int echoPinC = 6;
+#define echoPinC A3
+#define trigPinC A2
 
 // desni senzor
-const int trigPinD = 2;
-const int echoPinD = 3;
+#define echoPinC A0
+#define trigPinC A1
+
+//Definicija pinova L293D motor drivera
+#define EN1 5    //Enable 1, definiran na PWM pinu - kontrola brzine
+#define IN1 6    //Input 1
+#define IN2 7    //Input 2
+
+#define EN2 9    //Enable 2, definiran na PWM pinu
+#define IN3 8    //Input 3
+#define IN4 10   //Input 4
 
 // define variables
 long durationL;
@@ -63,6 +75,22 @@ FuzzySet* brzoL = new FuzzySet(10, 50, 100, 100);
 int left_wheel, right_wheel;
 
 void setup(){
+  
+  //Definicija pinova za upravljanje motorima
+  //Lijevi motor
+  pinMode(EN1, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT); 
+  analogWrite(EN1, 0);
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  //Desni motor
+  pinMode(EN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+  analogWrite(EN2, 0);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
 
   // FuzzyInput lijevi senzor
   FuzzyInput* lijevi = new FuzzyInput(1);
@@ -263,7 +291,8 @@ void setup(){
   pinMode(echoPinC, INPUT);
   pinMode(echoPinD, INPUT);
   
-  Serial.begin(9600); // Starts the serial communication
+  HC05.begin(115200);
+  //Serial.begin(9600); // Starts the serial communication
 
 }
 
@@ -323,34 +352,47 @@ void loop(){
     right_wheel = out_transBrzina;
   }
   
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  analogWrite(EN1, left_wheel);
+  
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(EN2, right_wheel);
+  delay(100);
+  
  
-  Serial.print("Inputs: "); Serial.print(distanceL); Serial.print(" "); Serial.print(distanceC); Serial.print(" "); Serial.println(distanceD);
-  Serial.print("Output transBrzina: "); Serial.print(out_transBrzina); Serial.print(", rotBrzina: "); Serial.println(out_rotBrzina);
-  Serial.print("Left wheel: "); Serial.print(left_wheel); Serial.print(", right_wheel: "); Serial.println(right_wheel);
-  Serial.print("1: "); Serial.println(izbjegavanje->isFiredRule(1));
-  
-  Serial.print("2: "); Serial.println(izbjegavanje->isFiredRule(2));
+//  Serial.print("Inputs: "); Serial.print(distanceL); Serial.print(" "); Serial.print(distanceC); Serial.print(" "); Serial.println(distanceD);
+//  Serial.print("Output transBrzina: "); Serial.print(out_transBrzina); Serial.print(", rotBrzina: "); Serial.println(out_rotBrzina);
+//  Serial.print("Left wheel: "); Serial.print(left_wheel); Serial.print(", right_wheel: "); Serial.println(right_wheel);
+//  Serial.print("1: "); Serial.println(izbjegavanje->isFiredRule(1));
+//  
+//  Serial.print("2: "); Serial.println(izbjegavanje->isFiredRule(2));
+//
+//  Serial.print("3: "); Serial.println(izbjegavanje->isFiredRule(3));
+//
+//  Serial.print("4: "); Serial.println(izbjegavanje->isFiredRule(4));
+//
+//  Serial.print("5: "); Serial.println(izbjegavanje->isFiredRule(5));
+//
+//  Serial.print("6: "); Serial.println(izbjegavanje->isFiredRule(6));
+//
+//  Serial.print("7: "); Serial.println(izbjegavanje->isFiredRule(7));
+//
+//  Serial.print("8: "); Serial.println(izbjegavanje->isFiredRule(8));
+//
+//  Serial.print("9: "); Serial.println(izbjegavanje->isFiredRule(9));
+//  
+//  Serial.print("10: "); Serial.println(izbjegavanje->isFiredRule(10));
+//  
+//  Serial.print("11: "); Serial.println(izbjegavanje->isFiredRule(11));
+//  Serial.println(" ");
+//
+//  delay(2000);
 
-  Serial.print("3: "); Serial.println(izbjegavanje->isFiredRule(3));
-
-  Serial.print("4: "); Serial.println(izbjegavanje->isFiredRule(4));
-
-  Serial.print("5: "); Serial.println(izbjegavanje->isFiredRule(5));
-
-  Serial.print("6: "); Serial.println(izbjegavanje->isFiredRule(6));
-
-  Serial.print("7: "); Serial.println(izbjegavanje->isFiredRule(7));
-
-  Serial.print("8: "); Serial.println(izbjegavanje->isFiredRule(8));
-
-  Serial.print("9: "); Serial.println(izbjegavanje->isFiredRule(9));
-  
-  Serial.print("10: "); Serial.println(izbjegavanje->isFiredRule(10));
-  
-  Serial.print("11: "); Serial.println(izbjegavanje->isFiredRule(11));
-  Serial.println(" ");
-
-  delay(2000);
+HC05.print("Inputs: "); HC05.print(distanceL); HC05.print(" "); HC05.print(distanceC); HC05.print(" "); HC05.println(distanceD);
+HC05.print("Output transBrzina: "); HC05.print(out_transBrzina); HC05.print(", rotBrzina: "); HC05.println(out_rotBrzina);
+HC05.print("Left wheel: "); HC05.print(left_wheel); HC05.print(", right_wheel: "); HC05.println(right_wheel);
   
 }
 
