@@ -8,8 +8,6 @@
 #include <FuzzySet.h>
 #include <FuzzyRuleAntecedent.h>
 
-#include <SoftwareSerial.h>
-SoftwareSerial HC05(4, 12);
 
 // lijevi senzor
 #define echoPinL A4
@@ -20,8 +18,8 @@ SoftwareSerial HC05(4, 12);
 #define trigPinC A2
 
 // desni senzor
-#define echoPinC A0
-#define trigPinC A1
+#define echoPinD A0
+#define trigPinD A1
 
 //Definicija pinova L293D motor drivera
 #define EN1 5    //Enable 1, definiran na PWM pinu - kontrola brzine
@@ -291,8 +289,10 @@ void setup(){
   pinMode(echoPinC, INPUT);
   pinMode(echoPinD, INPUT);
   
-  HC05.begin(115200);
-  //Serial.begin(9600); // Starts the serial communication
+  
+  Serial.begin(9600); // Starts the serial communication
+  Serial.println("Starting program in 5 seconds...");
+  delay(5000);
 
 }
 
@@ -332,14 +332,14 @@ void loop(){
   distanceC = (durationC/2) * 0.034;
   distanceD = (durationD/2) * 0.034;
   
-  izbjegavanje->setInput(1,400);  
-  izbjegavanje->setInput(2,50);  
-  izbjegavanje->setInput(3,50);
+  izbjegavanje->setInput(1,distanceL);  
+  izbjegavanje->setInput(2,distanceC);  
+  izbjegavanje->setInput(3,distanceD);
   
   izbjegavanje->fuzzify();
   
-  float out_transBrzina = izbjegavanje->defuzzify(1);
-  float out_rotBrzina = izbjegavanje->defuzzify(2);
+  uint8_t out_transBrzina = izbjegavanje->defuzzify(1);
+  uint8_t out_rotBrzina = izbjegavanje->defuzzify(2);
   
   if (out_rotBrzina < 0){
     left_wheel = out_transBrzina + out_rotBrzina;
@@ -362,9 +362,10 @@ void loop(){
   delay(100);
   
  
-//  Serial.print("Inputs: "); Serial.print(distanceL); Serial.print(" "); Serial.print(distanceC); Serial.print(" "); Serial.println(distanceD);
-//  Serial.print("Output transBrzina: "); Serial.print(out_transBrzina); Serial.print(", rotBrzina: "); Serial.println(out_rotBrzina);
-//  Serial.print("Left wheel: "); Serial.print(left_wheel); Serial.print(", right_wheel: "); Serial.println(right_wheel);
+  Serial.print("Inputs: "); Serial.print(distanceL); Serial.print(" "); Serial.print(distanceC); Serial.print(" "); Serial.println(distanceD);
+  Serial.print("Output transBrzina: "); Serial.print(out_transBrzina); Serial.print(", rotBrzina: "); Serial.println(out_rotBrzina);
+  Serial.print("Left wheel: "); Serial.print(left_wheel); Serial.print(", right_wheel: "); Serial.println(right_wheel);
+  Serial.println(" ");
 //  Serial.print("1: "); Serial.println(izbjegavanje->isFiredRule(1));
 //  
 //  Serial.print("2: "); Serial.println(izbjegavanje->isFiredRule(2));
@@ -386,13 +387,12 @@ void loop(){
 //  Serial.print("10: "); Serial.println(izbjegavanje->isFiredRule(10));
 //  
 //  Serial.print("11: "); Serial.println(izbjegavanje->isFiredRule(11));
+  delay(1000);
 //  Serial.println(" ");
 //
-//  delay(2000);
+  
 
-HC05.print("Inputs: "); HC05.print(distanceL); HC05.print(" "); HC05.print(distanceC); HC05.print(" "); HC05.println(distanceD);
-HC05.print("Output transBrzina: "); HC05.print(out_transBrzina); HC05.print(", rotBrzina: "); HC05.println(out_rotBrzina);
-HC05.print("Left wheel: "); HC05.print(left_wheel); HC05.print(", right_wheel: "); HC05.println(right_wheel);
+
   
 }
 
