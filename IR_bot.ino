@@ -21,6 +21,9 @@
 #define echoPinD A0
 #define trigPinD A1
 
+#include <SoftwareSerial.h>
+SoftwareSerial HC05(4, 12);
+
 //Definicija pinova L293D motor drivera
 #define EN1 5    //Enable 1, definiran na PWM pinu - kontrola brzine
 #define IN1 6    //Input 1
@@ -57,18 +60,31 @@ FuzzySet* srednjeD = new FuzzySet(5, 50, 50, 100);
 FuzzySet* blizuD = new FuzzySet(0, 0, 5, 50);
 
 
+//// Funkcije pripadnosti translacijske brzine
+//FuzzySet* stani = new FuzzySet(0, 0, 0, 0);
+//FuzzySet* sporo = new FuzzySet(0, 50, 50, 100);
+//FuzzySet* umjereno = new FuzzySet(50, 100, 100, 150);
+//FuzzySet* brzo = new FuzzySet(100, 150, 250, 250);
+//
+//// Funkcije pripadnosti rotacijske brzine
+//FuzzySet* brzoD = new FuzzySet(-100, -100, -50, -10); 
+//FuzzySet* sporoD = new FuzzySet(-50, -20, -20, -5);
+//FuzzySet* nula = new FuzzySet(-10, 0, 0, 10);
+//FuzzySet* sporoL = new FuzzySet(5, 20, 20, 50);
+//FuzzySet* brzoL = new FuzzySet(10, 50, 100, 100);
+
 // Funkcije pripadnosti translacijske brzine
 FuzzySet* stani = new FuzzySet(0, 0, 0, 0);
-FuzzySet* sporo = new FuzzySet(0, 50, 50, 100);
-FuzzySet* umjereno = new FuzzySet(50, 100, 100, 150);
-FuzzySet* brzo = new FuzzySet(100, 150, 250, 250);
+FuzzySet* sporo = new FuzzySet(120, 120, 150, 185);
+FuzzySet* umjereno = new FuzzySet(150, 185, 185, 220);
+FuzzySet* brzo = new FuzzySet(185, 220, 220, 230);
 
 // Funkcije pripadnosti rotacijske brzine
-FuzzySet* brzoD = new FuzzySet(-100, -100, -50, -10); 
-FuzzySet* sporoD = new FuzzySet(-50, -20, -20, -5);
-FuzzySet* nula = new FuzzySet(-10, 0, 0, 10);
-FuzzySet* sporoL = new FuzzySet(5, 20, 20, 50);
-FuzzySet* brzoL = new FuzzySet(10, 50, 100, 100);
+FuzzySet* brzoD = new FuzzySet(-20, -20, -10, -5); 
+FuzzySet* sporoD = new FuzzySet(-10, -7, -7, -2);
+FuzzySet* nula = new FuzzySet(-5, 0, 0, 5);
+FuzzySet* sporoL = new FuzzySet(2, 7, 7, 10 );
+FuzzySet* brzoL = new FuzzySet(5, 10, 20, 20);
 
 int left_wheel, right_wheel;
 
@@ -290,8 +306,8 @@ void setup(){
   pinMode(echoPinD, INPUT);
   
   
-  Serial.begin(9600); // Starts the serial communication
-  Serial.println("Starting program in 5 seconds...");
+  HC05.begin(9600);
+  HC05.println("Starting program in 5 seconds...");
   delay(5000);
 
 }
@@ -361,11 +377,10 @@ void loop(){
   analogWrite(EN2, right_wheel);
   delay(100);
   
- 
-  Serial.print("Inputs: "); Serial.print(distanceL); Serial.print(" "); Serial.print(distanceC); Serial.print(" "); Serial.println(distanceD);
-  Serial.print("Output transBrzina: "); Serial.print(out_transBrzina); Serial.print(", rotBrzina: "); Serial.println(out_rotBrzina);
-  Serial.print("Left wheel: "); Serial.print(left_wheel); Serial.print(", right_wheel: "); Serial.println(right_wheel);
-  Serial.println(" ");
+  HC05.print("Inputs: "); HC05.print(distanceL); HC05.print(" "); HC05.print(distanceC); HC05.print(" "); HC05.println(distanceD);
+  HC05.print("Output transBrzina: "); HC05.print(out_transBrzina); HC05.print(", rotBrzina: "); HC05.println(out_rotBrzina);
+  HC05.print("Left wheel: "); HC05.print(left_wheel); HC05.print(", right_wheel: "); HC05.println(right_wheel);
+  HC05.println(" ");
 //  Serial.print("1: "); Serial.println(izbjegavanje->isFiredRule(1));
 //  
 //  Serial.print("2: "); Serial.println(izbjegavanje->isFiredRule(2));
