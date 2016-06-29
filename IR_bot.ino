@@ -23,6 +23,7 @@
 
 #include <SoftwareSerial.h>
 SoftwareSerial HC05(4, 12);
+int BluetoothData; // the data given from Computer
 
 //Definicija pinova L293D motor drivera
 #define EN1 5    //Enable 1, definiran na PWM pinu - kontrola brzine
@@ -55,11 +56,9 @@ FuzzySet* srednjeS = new FuzzySet(5, 50, 50, 100);
 FuzzySet* blizuS = new FuzzySet(0, 0, 5, 50);
 
 // Funkcije pripadnosti ulaza sa senzora
-FuzzySet* dalekoD = new FuzzySet(50, 100, 400, 400);
-FuzzySet* srednjeD = new FuzzySet(5, 50, 50, 100);
-FuzzySet* blizuD = new FuzzySet(0, 0, 5, 50);
-
-
+FuzzySet* dalekoD = new FuzzySet(70, 150, 400, 400);
+FuzzySet* srednjeD = new FuzzySet(10, 70, 70, 150);
+FuzzySet* blizuD = new FuzzySet(0, 0, 10, 70);
 //// Funkcije pripadnosti translacijske brzine
 //FuzzySet* stani = new FuzzySet(0, 0, 0, 0);
 //FuzzySet* sporo = new FuzzySet(0, 50, 50, 100);
@@ -72,19 +71,23 @@ FuzzySet* blizuD = new FuzzySet(0, 0, 5, 50);
 //FuzzySet* nula = new FuzzySet(-10, 0, 0, 10);
 //FuzzySet* sporoL = new FuzzySet(5, 20, 20, 50);
 //FuzzySet* brzoL = new FuzzySet(10, 50, 100, 100);
-
 // Funkcije pripadnosti translacijske brzine
+//FuzzySet* stani = new FuzzySet(0, 0, 0, 0);
+//FuzzySet* sporo = new FuzzySet(120, 120, 150, 185);
+//FuzzySet* umjereno = new FuzzySet(150, 185, 185, 220);
+//FuzzySet* brzo = new FuzzySet(185, 220, 220, 230);
+
 FuzzySet* stani = new FuzzySet(0, 0, 0, 0);
-FuzzySet* sporo = new FuzzySet(120, 120, 150, 185);
-FuzzySet* umjereno = new FuzzySet(150, 185, 185, 220);
-FuzzySet* brzo = new FuzzySet(185, 220, 220, 230);
+FuzzySet* sporo = new FuzzySet(110, 110, 115, 120);
+FuzzySet* umjereno = new FuzzySet(115, 120, 120, 125);
+FuzzySet* brzo = new FuzzySet(120, 125, 130, 130);
 
 // Funkcije pripadnosti rotacijske brzine
-FuzzySet* brzoD = new FuzzySet(-20, -20, -10, -5); 
-FuzzySet* sporoD = new FuzzySet(-10, -7, -7, -2);
-FuzzySet* nula = new FuzzySet(-5, 0, 0, 5);
-FuzzySet* sporoL = new FuzzySet(2, 7, 7, 10 );
-FuzzySet* brzoL = new FuzzySet(5, 10, 20, 20);
+FuzzySet* brzoD = new FuzzySet(-20, -20, -15, -10); 
+FuzzySet* sporoD = new FuzzySet(-15, -10, -10, -2);
+FuzzySet* nula = new FuzzySet(-2, 0, 0, 2);
+FuzzySet* sporoL = new FuzzySet(2, 10, 10, 15 );
+FuzzySet* brzoL = new FuzzySet(10, 15, 20, 20);
 
 int left_wheel, right_wheel;
 
@@ -313,6 +316,8 @@ void setup(){
 }
 
 void loop(){
+  
+  
   // clear trigPins
   digitalWrite(trigPinL, LOW);
   digitalWrite(trigPinC, LOW);
@@ -355,7 +360,7 @@ void loop(){
   izbjegavanje->fuzzify();
   
   uint8_t out_transBrzina = izbjegavanje->defuzzify(1);
-  uint8_t out_rotBrzina = izbjegavanje->defuzzify(2);
+  int8_t out_rotBrzina = izbjegavanje->defuzzify(2);
   
   if (out_rotBrzina < 0){
     left_wheel = out_transBrzina + out_rotBrzina;
@@ -375,12 +380,13 @@ void loop(){
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
   analogWrite(EN2, right_wheel);
-  delay(100);
+  //delay(100);
   
-  HC05.print("Inputs: "); HC05.print(distanceL); HC05.print(" "); HC05.print(distanceC); HC05.print(" "); HC05.println(distanceD);
-  HC05.print("Output transBrzina: "); HC05.print(out_transBrzina); HC05.print(", rotBrzina: "); HC05.println(out_rotBrzina);
-  HC05.print("Left wheel: "); HC05.print(left_wheel); HC05.print(", right_wheel: "); HC05.println(right_wheel);
-  HC05.println(" ");
+//  HC05.print("Inputs: "); HC05.print(distanceL); HC05.print(" "); HC05.print(distanceC); HC05.print(" "); HC05.println(distanceD);
+//  HC05.print("Output transBrzina: "); HC05.print(out_transBrzina); HC05.print(", rotBrzina: "); HC05.println(out_rotBrzina);
+//  HC05.print("Left wheel: "); HC05.print(left_wheel); HC05.print(", right_wheel: "); HC05.println(right_wheel);
+//  HC05.println(".");
+  
 //  Serial.print("1: "); Serial.println(izbjegavanje->isFiredRule(1));
 //  
 //  Serial.print("2: "); Serial.println(izbjegavanje->isFiredRule(2));
@@ -402,10 +408,10 @@ void loop(){
 //  Serial.print("10: "); Serial.println(izbjegavanje->isFiredRule(10));
 //  
 //  Serial.print("11: "); Serial.println(izbjegavanje->isFiredRule(11));
-  delay(1000);
+  delay(200);
 //  Serial.println(" ");
 //
-  
+
 
 
   
