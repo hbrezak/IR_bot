@@ -1,6 +1,9 @@
 /*Čita 40 promjena na CHANGE i na RISING (umjesto 20).
 Koristi flag i obican delay koji mi se ne svida jer zaustavlja kod*/
 
+//Zamjenjeni pinovi 6 i 9, tako da mogu koristiti interrupt INT1 koji je 16bitni. EN2 je sada umjesto na pinu D9 na pinu D6 koji je takoder PWM. IN1 je umjesto D6 sada D9 jer
+// jer on ne treba PWM (koji se iskljucuje kada se eksplicitno koristi tajmer povezan s njim). Sada mogu implementirati timer interrupt
+
 #define encoderPinR 2
 #define encoderPinL 3
 
@@ -20,10 +23,10 @@ int pwmR = 140;
 
 //Definicija pinova L293D motor drivera
 #define EN1 5    //Enable 1, definiran na PWM pinu - kontrola brzine
-#define IN1 6    //Input 1
+#define IN1 9    //Input 1
 #define IN2 7    //Input 2
 
-#define EN2 9    //Enable 2, definiran na PWM pinu
+#define EN2 6    //Enable 2, definiran na PWM pinu
 #define IN3 8    //Input 3
 #define IN4 10   //Input 4
 
