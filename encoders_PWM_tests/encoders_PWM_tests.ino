@@ -4,6 +4,9 @@ Koristi flag i obican delay koji mi se ne svida jer zaustavlja kod*/
 //Zamjenjeni pinovi 6 i 9, tako da mogu koristiti interrupt INT1 koji je 16bitni. EN2 je sada umjesto na pinu D9 na pinu D6 koji je takoder PWM. IN1 je umjesto D6 sada D9 jer
 // jer on ne treba PWM (koji se iskljucuje kada se eksplicitno koristi tajmer povezan s njim). Sada mogu implementirati timer interrupt
 
+#include <avr/io.h>
+#include <avr/interrupt.h>
+
 #define encoderPinR 2
 #define encoderPinL 3
 
@@ -33,7 +36,7 @@ int pwmR = 140;
 #include <SoftwareSerial.h>
 SoftwareSerial HC05(4, 12);
 int BluetoothData; // the data given from Computer
-
+volatile long int count = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -60,9 +63,22 @@ void setup() {
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, LOW);
   
+  // Setting timer interrupt
+  cli();
+  TCCR1A = 0;
+  TCCR1B = 0;
+  
+  OCR1A = 6249;
+  
+  TCCR1B |= (1 << WGM12);
+  TCCR1B |= (1 << CS12);
+  
+  TIMSK1 |= (1 << OCIE1A);
+  sei();  
+  
   HC05.begin(9600);
   delay(3000);
-  while (!HC05.available()){}
+  while (!HC05.available()){}  
 
 }
 
@@ -72,13 +88,17 @@ void loop() {
 
   if (lastReportedPosL != encoderPosL) {
     HC05.print("Index L:");
-    HC05.println(encoderPosL, DEC);
+    HC05.println(rate_encL);//(encoderPosL, DEC);
+//    HC05.print("PWM L:");
+//    HC05.println(pwmL);
     lastReportedPosL = encoderPosL;
   }
   
    if (lastReportedPosR != encoderPosR) {
     HC05.print("Index R:");
-    HC05.println(encoderPosR, DEC);
+    HC05.println(rate_encR);
+//    HC05.print("PWM R:");
+//    HC05.println(pwmR);
     lastReportedPosR = encoderPosR;
   }
   
@@ -89,24 +109,25 @@ void loop() {
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
   analogWrite(EN2, pwmR);
-  delay(100);
-  
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, LOW);
-  analogWrite(EN1, 0);
-  
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, LOW);
-  analogWrite(EN2, 0);
+//  delay(100);
+//  
+//  digitalWrite(IN1, LOW);
+//  digitalWrite(IN2, LOW);
+//  analogWrite(EN1, 0);
+//  
+//  digitalWrite(IN3, LOW);
+//  digitalWrite(IN4, LOW);
+//  analogWrite(EN2, 0);
   
   rate_encL = encoderPosL - encoderPosL_old;
   rate_encR = encoderPosR - encoderPosR_old;
   
-  if ((rate_encL - rate_encR) == 0)
+  if (rate_encL == rate_encR)
     HC05.println("Same!");
-    else if ((rate_encL - rate_encR) > 0)
+    else if ((rate_encL - rate_encR) > 2)
       pwmL--;
-      else pwmR--;
+      else if ((rate_encR - rate_encL) > 2)
+      pwmR--;
   
   encoderPosL_old = encoderPosL;
   encoderPosR_old = encoderPosR;
@@ -129,4 +150,10 @@ void doEncoderL(){
     encoderPosL++;
     previousMillisL = millis();
   }
+}
+
+ISR(TIMER1_COMPA_vect)
+{
+  HC05.println(millis() - count);
+  count = millis();
 }
