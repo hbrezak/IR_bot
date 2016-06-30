@@ -1,8 +1,9 @@
-/*Čita 40 promjena na CHANGE i na RISING (umjesto 20).
-Koristi flag i obican delay koji mi se ne svida jer zaustavlja kod*/
 
-//Zamjenjeni pinovi 6 i 9, tako da mogu koristiti interrupt INT1 koji je 16bitni. EN2 je sada umjesto na pinu D9 na pinu D6 koji je takoder PWM. IN1 je umjesto D6 sada D9 jer
+// Zamjenjeni pinovi 6 i 9, tako da mogu koristiti interrupt INT1 koji je 16bitni. EN2 je sada umjesto na pinu D9 na pinu D6 koji je takoder PWM. IN1 je umjesto D6 sada D9 jer
 // jer on ne treba PWM (koji se iskljucuje kada se eksplicitno koristi tajmer povezan s njim). Sada mogu implementirati timer interrupt
+
+// Dodan timer interrupt koji u ciklusima od 100 ms azurira brzine tj. PWM motora ako je potrebno (ako su dva motora razlicite, u iducoj verziji brzina svakog motora prema vlastitoj
+// referenci)
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -10,18 +11,20 @@ Koristi flag i obican delay koji mi se ne svida jer zaustavlja kod*/
 #define encoderPinR 2
 #define encoderPinL 3
 
-unsigned int lastReportedPosR = 1;   // change management
-unsigned int lastReportedPosL = 1;   // change management
+volatile unsigned long int previousMillisR = 0;
+volatile unsigned long int previousMillisL = 0;
+
 volatile unsigned int encoderPosR = 0;  // a counter for the dial
 volatile unsigned int encoderPosL = 0;  // a counter for the dial
-unsigned long previousMillisR = 0;
-unsigned long previousMillisL = 0;
-uint16_t encoderPosL_old = 0;
-uint16_t encoderPosR_old = 0;
-int rate_encL = 0;
-int rate_encR = 0;
-int pwmL = 140;
-int pwmR = 140;
+
+volatile uint16_t encoderPosL_old = 0;
+volatile uint16_t encoderPosR_old = 0;
+
+volatile int pwmL = 140;
+volatile int pwmR = 140;
+
+volatile uint8_t rate_encL;
+volatile uint8_t rate_encR;
 
 
 //Definicija pinova L293D motor drivera
@@ -63,6 +66,19 @@ void setup() {
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, LOW);
   
+  /*
+   cli() - Clear Global Interrupt flag
+   sei() - Set Global Interrupt flag
+   Frequently, interrupts are being disabled for periods of time in order to perform certain operations without being disturbed
+   
+   TCCR - Timer/Counter Control Register; registers that hold setup values; in pairs - A and B
+   TIMSK - Timer Interrupt Mask Register - used to control which interrupts are "valid" by setting their bits
+   TOIE1 - Timer Overflow Interrupt Enable
+   OCIE1A - Output Compare Interrupt Enable 1A - if set and if global interrupts are enabled,
+         the micro will jump to the Output Compare A interrupt vector upon compare match
+   OCR1A - Output Compare register - generate interrupt after the number of clock ticks written to it; CTC bit in TCCR1B mush be set 
+         if time between is supposed to be equal every time
+   */
   // Setting timer interrupt
   cli();
   TCCR1A = 0;
@@ -84,53 +100,20 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-
-
-  if (lastReportedPosL != encoderPosL) {
-    HC05.print("Index L:");
-    HC05.println(rate_encL);//(encoderPosL, DEC);
-//    HC05.print("PWM L:");
-//    HC05.println(pwmL);
-    lastReportedPosL = encoderPosL;
-  }
   
-   if (lastReportedPosR != encoderPosR) {
-    HC05.print("Index R:");
-    HC05.println(rate_encR);
-//    HC05.print("PWM R:");
-//    HC05.println(pwmR);
-    lastReportedPosR = encoderPosR;
-  }
+  HC05.print("PWMs (L, R): "); HC05.print(pwmL); HC05.print("  "); HC05.println(pwmR);
+  HC05.print("Rates (L, R): "); HC05.print(rate_encL); HC05.print("  "); HC05.println(rate_encR);
   
-    digitalWrite(IN1, HIGH);
+  digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
   analogWrite(EN1, pwmL);
   
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
   analogWrite(EN2, pwmR);
-//  delay(100);
-//  
-//  digitalWrite(IN1, LOW);
-//  digitalWrite(IN2, LOW);
-//  analogWrite(EN1, 0);
-//  
-//  digitalWrite(IN3, LOW);
-//  digitalWrite(IN4, LOW);
-//  analogWrite(EN2, 0);
+
   
-  rate_encL = encoderPosL - encoderPosL_old;
-  rate_encR = encoderPosR - encoderPosR_old;
-  
-  if (rate_encL == rate_encR)
-    HC05.println("Same!");
-    else if ((rate_encL - rate_encR) > 2)
-      pwmL--;
-      else if ((rate_encR - rate_encL) > 2)
-      pwmR--;
-  
-  encoderPosL_old = encoderPosL;
-  encoderPosR_old = encoderPosR;
+
 
   
 
@@ -154,6 +137,31 @@ void doEncoderL(){
 
 ISR(TIMER1_COMPA_vect)
 {
-  HC05.println(millis() - count);
-  count = millis();
+  rate_encL = encoderPosL - encoderPosL_old;
+  rate_encR = encoderPosR - encoderPosR_old;
+  
+  if (rate_encL == rate_encR)
+    ;
+    else if ((rate_encL - rate_encR) > 2)
+    {
+      pwmL--;
+      update_speed();
+    }
+      else if ((rate_encR - rate_encL) > 2)
+      {
+        pwmR--;
+        update_speed;
+      }
+  
+  encoderPosL_old = encoderPosL;
+  encoderPosR_old = encoderPosR;
+  
+}
+
+void update_speed(){
+
+  analogWrite(EN1, pwmL);
+    
+  analogWrite(EN2, pwmR);
+
 }
