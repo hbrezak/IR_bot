@@ -17,9 +17,6 @@ volatile unsigned long int previousMillisL = 0;
 volatile unsigned int encoderPosR = 0;  // a counter for the dial
 volatile unsigned int encoderPosL = 0;  // a counter for the dial
 
-volatile uint16_t encoderPosL_old = 0;
-volatile uint16_t encoderPosR_old = 0;
-
 volatile int pwmL = 140;
 volatile int pwmR = 140;
 
@@ -103,6 +100,9 @@ void loop() {
   
   HC05.print("PWMs (L, R): "); HC05.print(pwmL); HC05.print("  "); HC05.println(pwmR);
   HC05.print("Rates (L, R): "); HC05.print(rate_encL); HC05.print("  "); HC05.println(rate_encR);
+  HC05.print("RPM (L, R): "); HC05.print(rate_encL * 15); HC05.print("  "); HC05.println(rate_encR * 15);
+  HC05.println(" ");
+  
   
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
@@ -137,24 +137,25 @@ void doEncoderL(){
 
 ISR(TIMER1_COMPA_vect)
 {
-  rate_encL = encoderPosL - encoderPosL_old;
-  rate_encR = encoderPosR - encoderPosR_old;
-  
+  // if I set tick count to 0 each time I read the sensors, I don't need to remember old tick number
+  rate_encL = encoderPosL;
+  rate_encR = encoderPosR;
+
   if (rate_encL == rate_encR)
     ;
-    else if ((rate_encL - rate_encR) > 2)
+    else if ((rate_encL - rate_encR) > 1)
     {
       pwmL--;
       update_speed();
     }
-      else if ((rate_encR - rate_encL) > 2)
+      else if ((rate_encR - rate_encL) > 1)
       {
         pwmR--;
         update_speed;
       }
   
-  encoderPosL_old = encoderPosL;
-  encoderPosR_old = encoderPosR;
+  encoderPosL = 0;
+  encoderPosR = 0;
   
 }
 
