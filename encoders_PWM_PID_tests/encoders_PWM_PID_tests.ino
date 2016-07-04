@@ -17,12 +17,27 @@ volatile unsigned long int previousMillisL = 0;
 volatile unsigned int encoderPosR = 0;  // a counter for the dial
 volatile unsigned int encoderPosL = 0;  // a counter for the dial
 
-volatile int pwmL = 255;
-volatile int pwmR = 255;
+volatile int pwmL = 0;
+volatile int pwmR = 0;
 
 volatile uint8_t rate_encL;
 volatile uint8_t rate_encR;
 
+// PID parameters
+const float Kp = 0.5;
+const float Ki = 0.2;
+const float Kd = 0;
+
+volatile int err_old = 0;
+volatile int Err = 0;
+volatile int err_dot = 0;
+
+volatile int u_left;
+volatile int u_right;
+volatile int ref_rpmL = 150;
+volatile int ref_rpmR = 150;
+volatile int rpmL;
+volatile int rpmR;
 
 //Definicija pinova L293D motor drivera
 #define EN1 5    //Enable 1, definiran na PWM pinu - kontrola brzine
@@ -89,28 +104,32 @@ void setup() {
   TIMSK1 |= (1 << OCIE1A);
   sei();  
   
-  HC05.begin(9600);
+  Serial.begin(9600);
   delay(3000);
-  while (!HC05.available()){}  
+  // while (!HC05.available()){}  
   
-    digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
-  analogWrite(EN1, pwmL);
-  
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, LOW);
-  analogWrite(EN2, pwmR);
+//    digitalWrite(IN1, HIGH);
+//  digitalWrite(IN2, LOW);
+//  analogWrite(EN1, pwmL);
+//  
+//  digitalWrite(IN3, HIGH);
+//  digitalWrite(IN4, LOW);
+//  analogWrite(EN2, pwmR);
 
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  
+  /*
   HC05.print("PWMs (L, R): "); HC05.print(pwmL); HC05.print("  "); HC05.println(pwmR);
   HC05.print("Rates (L, R): "); HC05.print(rate_encL); HC05.print("  "); HC05.println(rate_encR);
   HC05.print("RPM (L, R): "); HC05.print(rate_encL * 15); HC05.print("  "); HC05.println(rate_encR * 15);
-  HC05.println(" ");
+  HC05.println(" ");*/
   
+  //Serial.print("U left: "); Serial.println(u_left);
+  Serial.print("Error L: "); Serial.println(ref_rpmL - rpmL);
+  Serial.print("Error R: "); Serial.println(ref_rpmR - rpmR);
+  Serial.println("");
 }
 
 // Interrupt on A changing state
@@ -131,32 +150,61 @@ void doEncoderL(){
 
 ISR(TIMER1_COMPA_vect)
 {
-  // if I set tick count to 0 each time I read the sensors, I don't need to remember old tick number
+  // delta tick
   rate_encL = encoderPosL;
   rate_encR = encoderPosR;
+  
+  // RPM
+  rpmL = 15 * rate_encL; // formula calculated for my sensor and time period of reading sensor data
+  rpmR = 15 * rate_encR;
 
-  if (rate_encL == rate_encR)
-    ;
-    else if ((rate_encL - rate_encR) > 1)
-    {
-      pwmL--;
-      update_speed();
-    }
-      else if ((rate_encR - rate_encL) > 1)
-      {
-        pwmR--;
-        update_speed;
-      }
+  if (abs(rpmL - ref_rpmL)>2){
+      u_left = calc_speed(ref_rpmL - rpmL);
+      if (abs(u_left) > 255)
+          u_left = sign(u_left) * 255;
+      update_speed(); }
+  
+  if (abs(rpmR - ref_rpmR)>2){
+      u_right = calc_speed(ref_rpmR - rpmR);
+      if (abs(u_right) > 255)
+          u_right = sign(u_right) * 255;
+      update_speed(); } 
   
   encoderPosL = 0;
-  encoderPosR = 0;
-  
+  encoderPosR = 0;  
+}
+
+volatile int calc_speed(volatile int err){
+  err_dot = err - err_old;
+  Err = err + Err;
+  err_old = err;
+  //Serial.println(err);
+ // Serial.print(Kp*err); Serial.print(" ");Serial.print(Ki*Err); Serial.print(" "); Serial.println(Kd * err_dot);
+  return (Kp*err + Ki*Err + Kd * err_dot);  
 }
 
 void update_speed(){
-
-  analogWrite(EN1, pwmL);
+  
+  if (u_left > 0){
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, LOW);
+  } else {
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, HIGH);
+  }
+  
+  if (u_right > 0){
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, LOW);}
+    else {
+      digitalWrite(IN3, LOW);
+      digitalWrite(IN4, HIGH);
+    }
     
-  analogWrite(EN2, pwmR);
+    analogWrite(EN1, abs(u_left));
+    analogWrite(EN2, abs(u_right));
 
 }
+
+int sign(int x){
+  return (x > 0) ? 1 : ((x < 0) ? -1 : 0);}
