@@ -28,14 +28,17 @@ const float Kp = 0.5;
 const float Ki = 0.2;
 const float Kd = 0;
 
-volatile int err_old = 0;
-volatile int Err = 0;
-volatile int err_dot = 0;
+volatile int err_oldL = 0;
+volatile int ErrL = 0;
+volatile int err_dotL = 0;
+volatile int err_oldR = 0;
+volatile int ErrR = 0;
+volatile int err_dotR = 0;
 
 volatile int u_left;
 volatile int u_right;
-volatile int ref_rpmL = 150;
-volatile int ref_rpmR = 150;
+volatile int ref_rpmL = -45;
+volatile int ref_rpmR = 45;
 volatile int rpmL;
 volatile int rpmR;
 
@@ -51,7 +54,6 @@ volatile int rpmR;
 #include <SoftwareSerial.h>
 SoftwareSerial HC05(4, 12);
 int BluetoothData; // the data given from Computer
-volatile long int count = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -77,6 +79,8 @@ void setup() {
   analogWrite(EN2, 0);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, LOW);
+  delay(3000);
+  Serial.begin(9600);
   
   /*
    cli() - Clear Global Interrupt flag
@@ -101,11 +105,8 @@ void setup() {
   TCCR1B |= (1 << WGM12);
   TCCR1B |= (1 << CS12);
   
-  TIMSK1 |= (1 << OCIE1A);
+  TIMSK1 |= (1 << OCIE1A);  
   sei();  
-  
-  Serial.begin(9600);
-  delay(3000);
   // while (!HC05.available()){}  
   
 //    digitalWrite(IN1, HIGH);
@@ -155,55 +156,63 @@ ISR(TIMER1_COMPA_vect)
   rate_encR = encoderPosR;
   
   // RPM
-  rpmL = 15 * rate_encL; // formula calculated for my sensor and time period of reading sensor data
-  rpmR = 15 * rate_encR;
+  rpmL = sign(ref_rpmL) * 15 * rate_encL; // formula calculated for my sensor and time period of reading sensor data
+  rpmR = sign(ref_rpmR) * 15 * rate_encR;
 
   if (abs(rpmL - ref_rpmL)>2){
-      u_left = calc_speed(ref_rpmL - rpmL);
+      u_left = calc_speedL(ref_rpmL - rpmL);
       if (abs(u_left) > 255)
           u_left = sign(u_left) * 255;
-      update_speed(); }
+      update_speedL(); }
   
   if (abs(rpmR - ref_rpmR)>2){
-      u_right = calc_speed(ref_rpmR - rpmR);
+      u_right = calc_speedR(ref_rpmR - rpmR);
       if (abs(u_right) > 255)
           u_right = sign(u_right) * 255;
-      update_speed(); } 
+      update_speedR(); } 
   
   encoderPosL = 0;
   encoderPosR = 0;  
 }
 
-volatile int calc_speed(volatile int err){
-  err_dot = err - err_old;
-  Err = err + Err;
-  err_old = err;
+volatile int calc_speedL(volatile int err){
+  err_dotL = err - err_oldL;
+  ErrL = err + ErrL;
+  err_oldL = err;
   //Serial.println(err);
  // Serial.print(Kp*err); Serial.print(" ");Serial.print(Ki*Err); Serial.print(" "); Serial.println(Kd * err_dot);
-  return (Kp*err + Ki*Err + Kd * err_dot);  
+  return (Kp*err + Ki*ErrL + Kd * err_dotL); 
 }
 
-void update_speed(){
-  
-  if (u_left > 0){
+volatile int calc_speedR(volatile int err){
+  err_dotR = err - err_oldR;
+  ErrR = err + ErrR;
+  err_oldR = err;
+  //Serial.println(err);
+ // Serial.print(Kp*err); Serial.print(" ");Serial.print(Ki*Err); Serial.print(" "); Serial.println(Kd * err_dot);
+  return (Kp*err + Ki*ErrR + Kd * err_dotR);  
+}
+
+void update_speedL(){  
+  if (u_left >= 0){
     digitalWrite(IN1, HIGH);
     digitalWrite(IN2, LOW);
   } else {
     digitalWrite(IN1, LOW);
     digitalWrite(IN2, HIGH);
   }
-  
-  if (u_right > 0){
+  analogWrite(EN1, abs(u_left));
+}
+
+void update_speedR(){  
+  if (u_right >= 0){
     digitalWrite(IN3, HIGH);
     digitalWrite(IN4, LOW);}
     else {
       digitalWrite(IN3, LOW);
       digitalWrite(IN4, HIGH);
-    }
-    
-    analogWrite(EN1, abs(u_left));
-    analogWrite(EN2, abs(u_right));
-
+    } 
+  analogWrite(EN2, abs(u_right));
 }
 
 int sign(int x){
