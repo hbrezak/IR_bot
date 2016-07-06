@@ -147,9 +147,9 @@ FuzzySet* brzo = new FuzzySet(90, 105, 150, 150);
 
 // Funkcije pripadnosti rotacijske brzine
 FuzzySet* brzoD = new FuzzySet(-60, -60, -45, -30); 
-FuzzySet* sporoD = new FuzzySet(-45, -30, -30, 0);
+FuzzySet* sporoD = new FuzzySet(-45, -30, -30, -10);
 FuzzySet* nula = new FuzzySet(-15, 0, 0, 15);
-FuzzySet* sporoL = new FuzzySet(0, 30, 30, 45);
+FuzzySet* sporoL = new FuzzySet(10, 30, 30, 45);
 FuzzySet* brzoL = new FuzzySet(30, 45, 60, 60);
 
 int left_wheel, right_wheel;
@@ -344,11 +344,11 @@ void setup(){
   FuzzyRuleAntecedent* ifLijeviSrednjeAndSrednjiBlizuAndDesniSrednje = new FuzzyRuleAntecedent();
   ifLijeviSrednjeAndSrednjiBlizuAndDesniSrednje->joinWithAND(lijeviSrednjeAndSrednjiBlizu, srednjeD);
 
-  //FuzzyRuleConsequent* thenTransBrzinaStaniAndRotBrzinaBrzoD = new FuzzyRuleConsequent();
-  //thenTransBrzinaStaniAndRotBrzinaBrzoD->addOutput(stani);
-  //thenTransBrzinaStaniAndRotBrzinaBrzoD->addOutput(brzoD);
+  FuzzyRuleConsequent* thenTransBrzinaSporoAndRotBrzinaNula = new FuzzyRuleConsequent();
+  thenTransBrzinaSporoAndRotBrzinaNula->addOutput(sporo);
+  thenTransBrzinaSporoAndRotBrzinaNula->addOutput(nula);
 
-  FuzzyRule* pravilo10 = new FuzzyRule(10, ifLijeviSrednjeAndSrednjiBlizuAndDesniSrednje, thenTransBrzinaSporoAndRotBrzinaBrzoL);
+  FuzzyRule* pravilo10 = new FuzzyRule(10, ifLijeviSrednjeAndSrednjiBlizuAndDesniSrednje, thenTransBrzinaSporoAndRotBrzinaNula);
   izbjegavanje->addFuzzyRule(pravilo10);  
   
   // Pravilo 11
@@ -470,7 +470,9 @@ void loop(){
   //delay(100);
   
   Serial.print("Inputs: "); Serial.print(distanceL); Serial.print(" "); Serial.print(distanceC); Serial.print(" "); Serial.println(distanceD);
-  Serial.print("Output transBrzina: "); Serial.print(out_transBrzina); Serial.print(", rotBrzina: "); Serial.println(out_rotBrzina);
+//  Serial.print("transB, rotB: "); Serial.print(out_transBrzina); Serial.print(" "); Serial.println(out_rotBrzina);
+//  Serial.print("RPM desired L, R: "); Serial.print(ref_rpmL_d); Serial.print(" "); Serial.println(ref_rpmR_d);
+//  Serial.print("RPM L, R: "); Serial.print(ref_rpmL); Serial.print(" "); Serial.println(ref_rpmR);
 //  HC05.print("Left wheel: "); HC05.print(left_wheel); HC05.print(", right_wheel: "); HC05.println(right_wheel);
   Serial.println(" ");
   
@@ -521,6 +523,15 @@ ISR(TIMER1_COMPA_vect)
   rate_encL = encoderPosL;
   rate_encR = encoderPosR;
   
+  if ((ref_rpmL == 0)&&(ref_rpmR==0)){
+    u_left = 0;
+    u_right = 0;
+    update_speedL();
+    update_speedR();
+  }
+  else {
+  
+  
   // RPM
   rpmL = sign(ref_rpmL) * 15 * rate_encL; // formula calculated for my sensor and time period of reading sensor data
   rpmR = sign(ref_rpmR) * 15 * rate_encR;
@@ -528,15 +539,17 @@ ISR(TIMER1_COMPA_vect)
   if (abs(rpmL - ref_rpmL)>2){
       u_left = calc_speedL(ref_rpmL - rpmL);
       if (abs(u_left) > 255)
-          u_left = sign(u_left) * 255;}
-      //update_speedL(); }
+          u_left = sign(u_left) * 255;
+      update_speedL(); 
+    }
   
   if (abs(rpmR - ref_rpmR)>2){
       u_right = calc_speedR(ref_rpmR - rpmR);
       if (abs(u_right) > 255)
-          u_right = sign(u_right) * 255;}
-      //update_speedR(); } 
-  
+          u_right = sign(u_right) * 255;
+      update_speedR(); 
+    } 
+  }
   encoderPosL = 0;
   encoderPosR = 0;  
 }
