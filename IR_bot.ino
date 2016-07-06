@@ -86,27 +86,27 @@ SoftwareSerial HC05(4, 12);
 uint16_t durationL;
 uint16_t durationC;
 uint16_t durationD;
-//uint16_t distanceL;
-//uint16_t distanceC;
-//uint16_t distanceD;
+uint16_t distanceL;
+uint16_t distanceC;
+uint16_t distanceD;
 
 // Instantiating an object of library
 Fuzzy* izbjegavanje = new Fuzzy();
 
 // Funkcije pripadnosti ulaza sa senzora
-FuzzySet* dalekoL = new FuzzySet(50, 100, 400, 400);
-FuzzySet* srednjeL = new FuzzySet(5, 50, 50, 100);
-FuzzySet* blizuL = new FuzzySet(0, 0, 5, 50);
+FuzzySet* dalekoL = new FuzzySet(120, 190, 400, 400);
+FuzzySet* srednjeL = new FuzzySet(30, 100, 100, 160);
+FuzzySet* blizuL = new FuzzySet(0, 0, 20, 50);
 
 // Funkcije pripadnosti ulaza sa senzora
-FuzzySet* dalekoS = new FuzzySet(50, 100, 400, 400);
-FuzzySet* srednjeS = new FuzzySet(5, 50, 50, 100);
-FuzzySet* blizuS = new FuzzySet(0, 0, 5, 50);
+FuzzySet* dalekoS = new FuzzySet(120, 190, 400, 400);
+FuzzySet* srednjeS = new FuzzySet(30, 100, 100, 160);
+FuzzySet* blizuS = new FuzzySet(0, 0, 20, 50);
 
 // Funkcije pripadnosti ulaza sa senzora
-FuzzySet* dalekoD = new FuzzySet(70, 150, 400, 400);
-FuzzySet* srednjeD = new FuzzySet(10, 70, 70, 150);
-FuzzySet* blizuD = new FuzzySet(0, 0, 10, 70);
+FuzzySet* dalekoD = new FuzzySet(120, 190, 400, 400);
+FuzzySet* srednjeD = new FuzzySet(30, 100, 100, 160);
+FuzzySet* blizuD = new FuzzySet(0, 0, 20, 50);
 
 // Funkcije pripadnosti translacijske brzine
 FuzzySet* stani = new FuzzySet(0, 0, 0, 0);
@@ -247,6 +247,22 @@ void setup(){
 
   FuzzyRuleAntecedent* ifLijeviBlizuAndSrednjiBlizuAndDesniBlizu = new FuzzyRuleAntecedent();
   ifLijeviBlizuAndSrednjiBlizuAndDesniBlizu->joinWithAND(lijeviBlizuAndSrednjiBlizu, blizuD);
+  
+  FuzzyRuleAntecedent* lijeviBlizuAndSrednjiDaleko = new FuzzyRuleAntecedent();
+  lijeviBlizuAndSrednjiDaleko->joinWithAND(blizuL, dalekoS);
+  FuzzyRuleAntecedent* ifLijeviBlizuAndSrednjiDalekoAndDesniDaleko = new FuzzyRuleAntecedent();
+  ifLijeviBlizuAndSrednjiDalekoAndDesniDaleko->joinWithAND(lijeviBlizuAndSrednjiDaleko, dalekoD);
+  
+  FuzzyRuleAntecedent* ifLijeviDalekoAndSrednjiDalekoAndDesniBlizu = new FuzzyRuleAntecedent();
+  ifLijeviDalekoAndSrednjiDalekoAndDesniBlizu->joinWithAND(lijeviDalekoAndSrednjiDaleko, blizuD);
+  
+    FuzzyRuleAntecedent* ifLijeviDalekoAndSrednjiDalekoAndDesniSrednje = new FuzzyRuleAntecedent();
+  ifLijeviDalekoAndSrednjiDalekoAndDesniSrednje->joinWithAND(lijeviDalekoAndSrednjiDaleko, srednjeD);
+  
+  FuzzyRuleAntecedent* lijeviSrednjeAndSrednjiDaleko = new FuzzyRuleAntecedent();
+  lijeviSrednjeAndSrednjiDaleko->joinWithAND(srednjeL, dalekoS);
+    FuzzyRuleAntecedent* ifLijeviSrednjeAndSrednjiDalekoAndDesniDaleko = new FuzzyRuleAntecedent();
+  ifLijeviSrednjeAndSrednjiDalekoAndDesniDaleko->joinWithAND(lijeviSrednjeAndSrednjiDaleko, dalekoD);
 
   // Definiranje zakljucaka
   FuzzyRuleConsequent* thenTransBrzinaBrzoAndRotBrzinaNula = new FuzzyRuleConsequent();
@@ -280,15 +296,27 @@ void setup(){
   FuzzyRuleConsequent* thenTransBrzinaStaniAndRotBrzinaNula = new FuzzyRuleConsequent();
   thenTransBrzinaStaniAndRotBrzinaNula->addOutput(stani);
   thenTransBrzinaStaniAndRotBrzinaNula->addOutput(nula);
+  
+  FuzzyRuleConsequent* thenTransBrzinaBrzoAndRotBrzinaSporoD = new FuzzyRuleConsequent();
+  thenTransBrzinaBrzoAndRotBrzinaSporoD->addOutput(brzo);
+  thenTransBrzinaBrzoAndRotBrzinaSporoD->addOutput(sporoD);
+  
+  FuzzyRuleConsequent* thenTransBrzinaBrzoAndRotBrzinaSporoL = new FuzzyRuleConsequent();
+  thenTransBrzinaBrzoAndRotBrzinaSporoL->addOutput(brzo);
+  thenTransBrzinaBrzoAndRotBrzinaSporoL->addOutput(sporoL);
 
   // Definiranje pravila
   // Pravilo 1
   FuzzyRule* pravilo1 = new FuzzyRule(1, ifLijeviDalekoAndSrednjiDalekoAndDesniDaleko, thenTransBrzinaBrzoAndRotBrzinaNula);
   izbjegavanje->addFuzzyRule(pravilo1);
 
-  // Pravilo 3
-  FuzzyRule* pravilo3 = new FuzzyRule(3, ifLijeviSrednjeAndSrednjiSrednjeAndDesniSrednje, thenTransBrzinaUmjerenoAndRotBrzinaNula);
-  izbjegavanje->addFuzzyRule(pravilo3);
+//  // Pravilo 3
+//  FuzzyRule* pravilo3 = new FuzzyRule(3, ifLijeviSrednjeAndSrednjiSrednjeAndDesniSrednje, thenTransBrzinaUmjerenoAndRotBrzinaNula);
+//  izbjegavanje->addFuzzyRule(pravilo3);
+
+    // Pravilo 2
+  FuzzyRule* pravilo2 = new FuzzyRule(2, ifLijeviSrednjeAndSrednjiBlizuAndDesniSrednje, thenTransBrzinaStaniAndRotBrzinaNula);
+  izbjegavanje->addFuzzyRule(pravilo2);
 
   // Pravilo 4
   FuzzyRule* pravilo4 = new FuzzyRule(4, ifLijeviSrednjeAndSrednjiSrednjeAndDesniDaleko, thenTransBrzinaUmjerenoAndRotBrzinaSporoD);
@@ -314,17 +342,31 @@ void setup(){
   FuzzyRule* pravilo9 = new FuzzyRule(9, ifLijeviDalekoAndSrednjiSrednjeAndDesniDaleko, thenTransBrzinaUmjerenoAndRotBrzinaNula);
   izbjegavanje->addFuzzyRule(pravilo9);
 
-  // Pravilo 10
-  FuzzyRule* pravilo10 = new FuzzyRule(10, ifLijeviSrednjeAndSrednjiBlizuAndDesniSrednje, thenTransBrzinaSporoAndRotBrzinaNula);
-  izbjegavanje->addFuzzyRule(pravilo10);  
+//  // Pravilo 10
+//  FuzzyRule* pravilo10 = new FuzzyRule(10, ifLijeviSrednjeAndSrednjiBlizuAndDesniSrednje, thenTransBrzinaSporoAndRotBrzinaNula);
+//  izbjegavanje->addFuzzyRule(pravilo10);  
 
   // Pravilo 11
   FuzzyRule* pravilo11 = new FuzzyRule(11, ifLijeviBlizuAndSrednjiSrednjeAndDesniDaleko, thenTransBrzinaSporoAndRotBrzinaBrzoD);
   izbjegavanje->addFuzzyRule(pravilo11);
-
-  // Pravilo 2
-  FuzzyRule* pravilo2 = new FuzzyRule(2, ifLijeviBlizuAndSrednjiBlizuAndDesniBlizu, thenTransBrzinaStaniAndRotBrzinaNula);
-  izbjegavanje->addFuzzyRule(pravilo2);
+  
+  // Pravilo 12
+  FuzzyRule* pravilo3 = new FuzzyRule(3, ifLijeviBlizuAndSrednjiDalekoAndDesniDaleko, thenTransBrzinaBrzoAndRotBrzinaSporoD);
+  izbjegavanje->addFuzzyRule(pravilo3);
+  
+  // Pravilo 13
+  FuzzyRule* pravilo10 = new FuzzyRule(10, ifLijeviDalekoAndSrednjiDalekoAndDesniBlizu, thenTransBrzinaBrzoAndRotBrzinaSporoL);
+  izbjegavanje->addFuzzyRule(pravilo10);
+  
+    // Pravilo 12
+  FuzzyRule* pravilo12 = new FuzzyRule(12, ifLijeviDalekoAndSrednjiDalekoAndDesniSrednje, thenTransBrzinaBrzoAndRotBrzinaSporoL);
+  izbjegavanje->addFuzzyRule(pravilo12);
+  
+    // Pravilo 13
+  FuzzyRule* pravilo13 = new FuzzyRule(13, ifLijeviSrednjeAndSrednjiDalekoAndDesniDaleko, thenTransBrzinaBrzoAndRotBrzinaSporoD);
+  izbjegavanje->addFuzzyRule(pravilo13);
+  
+  //fali daleko daleko srednje
 
   // Setting timer interrupt
   cli();
@@ -339,8 +381,8 @@ void setup(){
   TIMSK1 |= (1 << OCIE1A);
   sei(); 
 
-  Serial.begin(9600);
-  Serial.println("Starting program in 5 seconds...");
+  HC05.begin(9600);
+  HC05.println("Starting program in 5 seconds...");
   delay(5000);
 }
 
@@ -377,13 +419,13 @@ void loop(){
   durationD = pulseIn(echoPinD, HIGH); 
 
   // calculate the distance
- // distanceL = (durationL/2) * 0.034;
- // distanceC = (durationC/2) * 0.034;
- // distanceD = (durationD/2) * 0.034;
+  distanceL = ((durationL/2) * 0.034) > 400 ? 400: ((durationL/2) * 0.034);
+  distanceC = ((durationC/2) * 0.034) > 400 ? 400: ((durationC/2) * 0.034);
+  distanceD = ((durationD/2) * 0.034) > 400 ? 400: ((durationD/2) * 0.034);
 
-  izbjegavanje->setInput(1,durationL * 0.017);  
-  izbjegavanje->setInput(2,durationC * 0.017);  
-  izbjegavanje->setInput(3,durationD * 0.017);
+  izbjegavanje->setInput(1,distanceL);  
+  izbjegavanje->setInput(2,distanceC);  
+  izbjegavanje->setInput(3, distanceD);
 
   izbjegavanje->fuzzify();
 
@@ -408,17 +450,17 @@ void loop(){
   else ref_rpmR = ref_rpmR_d;
   sei();
 
-//  Serial.print("Inputs: "); 
-//  Serial.print(distanceL); 
-//  Serial.print(" "); 
-//  Serial.print(distanceC); 
-//  Serial.print(" "); 
-//  Serial.println(distanceD);
+  HC05.print("Inputs: "); 
+  HC05.print(distanceL); 
+  HC05.print(" "); 
+  HC05.print(distanceC); 
+  HC05.print(" "); 
+  HC05.println(distanceD);
   //  Serial.print("transB, rotB: "); Serial.print(out_transBrzina); Serial.print(" "); Serial.println(out_rotBrzina);
   //  Serial.print("RPM desired L, R: "); Serial.print(ref_rpmL_d); Serial.print(" "); Serial.println(ref_rpmR_d);
   //  Serial.print("RPM L, R: "); Serial.print(ref_rpmL); Serial.print(" "); Serial.println(ref_rpmR);
   //  HC05.print("Left wheel: "); HC05.print(left_wheel); HC05.print(", right_wheel: "); HC05.println(right_wheel);
-  //Serial.println(" ");
+  HC05.println(" ");
 }
 
 // Interrupt on A changing state
