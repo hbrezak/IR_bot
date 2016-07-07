@@ -1,4 +1,7 @@
-// Include Fuzzy library elements
+#include <MemoryFree.h>
+#include <avr/pgmspace.h>
+
+// Include Fuzzy library elements - modified library -> set points are now of type int (more SRAM)
 #include <FuzzyRule.h>
 #include <FuzzyComposition.h>
 #include <Fuzzy.h>
@@ -51,26 +54,23 @@
 volatile unsigned long int previousMillisR = 0;
 volatile unsigned long int previousMillisL = 0;
 
-volatile unsigned int encoderPosR = 0;  // a counter for the dial
-volatile unsigned int encoderPosL = 0;  // a counter for the dial
-
-volatile uint8_t rate_encL;
-volatile uint8_t rate_encR;
+volatile uint8_t encoderPosR = 0;  // a counter for the dial
+volatile uint8_t encoderPosL = 0;  // a counter for the dial
 
 // PID parameters and variables
-const float Kp = 0.5;
-const float Ki = 0.2;
-const float Kd = 0;
+const float Kp = 0.5; 
+const float Ki = 0.2; 
+//const float Kd = 0;
 
-volatile int err_oldL = 0;
+//volatile int err_oldL = 0;
 volatile int ErrL = 0;
-volatile int err_dotL = 0;
-volatile int err_oldR = 0;
+//volatile int err_dotL = 0;
+//volatile int err_oldR = 0;
 volatile int ErrR = 0;
-volatile int err_dotR = 0;
+//volatile int err_dotR = 0;
 
-volatile int u_left;
-volatile int u_right;
+//volatile int u_left;
+//volatile int u_right;
 volatile int ref_rpmL_d = 0;
 volatile int ref_rpmR_d = 0;
 volatile int ref_rpmL = 0;
@@ -86,27 +86,27 @@ SoftwareSerial HC05(4, 12);
 uint16_t durationL;
 uint16_t durationC;
 uint16_t durationD;
-uint16_t distanceL;
-uint16_t distanceC;
-uint16_t distanceD;
+//uint16_t distanceL;
+//uint16_t distanceC;
+//uint16_t distanceD;
 
 // Instantiating an object of library
 Fuzzy* izbjegavanje = new Fuzzy();
 
 // Funkcije pripadnosti ulaza sa senzora
-FuzzySet* dalekoL = new FuzzySet(120, 190, 400, 400);
-FuzzySet* srednjeL = new FuzzySet(30, 100, 100, 160);
-FuzzySet* blizuL = new FuzzySet(0, 0, 20, 50);
+FuzzySet* dalekoL = new FuzzySet(80, 100, 400, 400);
+FuzzySet* srednjeL = new FuzzySet(20, 60, 60, 100);
+FuzzySet* blizuL = new FuzzySet(0, 0, 10, 30);
 
 // Funkcije pripadnosti ulaza sa senzora
-FuzzySet* dalekoS = new FuzzySet(120, 190, 400, 400);
-FuzzySet* srednjeS = new FuzzySet(30, 100, 100, 160);
-FuzzySet* blizuS = new FuzzySet(0, 0, 20, 50);
+FuzzySet* dalekoS = new FuzzySet(80, 100, 400, 400);
+FuzzySet* srednjeS = new FuzzySet(20, 60, 60, 100);
+FuzzySet* blizuS = new FuzzySet(0, 0, 10, 30);
 
 // Funkcije pripadnosti ulaza sa senzora
-FuzzySet* dalekoD = new FuzzySet(120, 190, 400, 400);
-FuzzySet* srednjeD = new FuzzySet(30, 100, 100, 160);
-FuzzySet* blizuD = new FuzzySet(0, 0, 20, 50);
+FuzzySet* dalekoD = new FuzzySet(80, 100, 400, 400);
+FuzzySet* srednjeD = new FuzzySet(20, 60, 60, 100);
+FuzzySet* blizuD = new FuzzySet(0, 0, 10, 30);
 
 // Funkcije pripadnosti translacijske brzine
 FuzzySet* stani = new FuzzySet(0, 0, 0, 0);
@@ -259,10 +259,10 @@ void setup(){
     FuzzyRuleAntecedent* ifLijeviDalekoAndSrednjiDalekoAndDesniSrednje = new FuzzyRuleAntecedent();
   ifLijeviDalekoAndSrednjiDalekoAndDesniSrednje->joinWithAND(lijeviDalekoAndSrednjiDaleko, srednjeD);
   
-  FuzzyRuleAntecedent* lijeviSrednjeAndSrednjiDaleko = new FuzzyRuleAntecedent();
-  lijeviSrednjeAndSrednjiDaleko->joinWithAND(srednjeL, dalekoS);
-    FuzzyRuleAntecedent* ifLijeviSrednjeAndSrednjiDalekoAndDesniDaleko = new FuzzyRuleAntecedent();
-  ifLijeviSrednjeAndSrednjiDalekoAndDesniDaleko->joinWithAND(lijeviSrednjeAndSrednjiDaleko, dalekoD);
+ FuzzyRuleAntecedent* lijeviSrednjeAndSrednjiDaleko = new FuzzyRuleAntecedent();
+ lijeviSrednjeAndSrednjiDaleko->joinWithAND(srednjeL, dalekoS);
+   FuzzyRuleAntecedent* ifLijeviSrednjeAndSrednjiDalekoAndDesniDaleko = new FuzzyRuleAntecedent();
+ ifLijeviSrednjeAndSrednjiDalekoAndDesniDaleko->joinWithAND(lijeviSrednjeAndSrednjiDaleko, dalekoD);
 
   // Definiranje zakljucaka
   FuzzyRuleConsequent* thenTransBrzinaBrzoAndRotBrzinaNula = new FuzzyRuleConsequent();
@@ -309,14 +309,14 @@ void setup(){
   // Pravilo 1
   FuzzyRule* pravilo1 = new FuzzyRule(1, ifLijeviDalekoAndSrednjiDalekoAndDesniDaleko, thenTransBrzinaBrzoAndRotBrzinaNula);
   izbjegavanje->addFuzzyRule(pravilo1);
-
-//  // Pravilo 3
-//  FuzzyRule* pravilo3 = new FuzzyRule(3, ifLijeviSrednjeAndSrednjiSrednjeAndDesniSrednje, thenTransBrzinaUmjerenoAndRotBrzinaNula);
-//  izbjegavanje->addFuzzyRule(pravilo3);
-
-    // Pravilo 2
+  
+      // Pravilo 2
   FuzzyRule* pravilo2 = new FuzzyRule(2, ifLijeviSrednjeAndSrednjiBlizuAndDesniSrednje, thenTransBrzinaStaniAndRotBrzinaNula);
   izbjegavanje->addFuzzyRule(pravilo2);
+
+  // Pravilo 3
+  FuzzyRule* pravilo3 = new FuzzyRule(3, ifLijeviSrednjeAndSrednjiSrednjeAndDesniSrednje, thenTransBrzinaUmjerenoAndRotBrzinaNula);
+  izbjegavanje->addFuzzyRule(pravilo3);
 
   // Pravilo 4
   FuzzyRule* pravilo4 = new FuzzyRule(4, ifLijeviSrednjeAndSrednjiSrednjeAndDesniDaleko, thenTransBrzinaUmjerenoAndRotBrzinaSporoD);
@@ -343,31 +343,31 @@ void setup(){
   izbjegavanje->addFuzzyRule(pravilo9);
 
 //  // Pravilo 10
-//  FuzzyRule* pravilo10 = new FuzzyRule(10, ifLijeviSrednjeAndSrednjiBlizuAndDesniSrednje, thenTransBrzinaSporoAndRotBrzinaNula);
-//  izbjegavanje->addFuzzyRule(pravilo10);  
+  FuzzyRule* pravilo10 = new FuzzyRule(10, ifLijeviSrednjeAndSrednjiBlizuAndDesniSrednje, thenTransBrzinaSporoAndRotBrzinaNula);
+  izbjegavanje->addFuzzyRule(pravilo10);  
 
   // Pravilo 11
   FuzzyRule* pravilo11 = new FuzzyRule(11, ifLijeviBlizuAndSrednjiSrednjeAndDesniDaleko, thenTransBrzinaSporoAndRotBrzinaBrzoD);
   izbjegavanje->addFuzzyRule(pravilo11);
   
   // Pravilo 12
-  FuzzyRule* pravilo3 = new FuzzyRule(3, ifLijeviBlizuAndSrednjiDalekoAndDesniDaleko, thenTransBrzinaBrzoAndRotBrzinaSporoD);
-  izbjegavanje->addFuzzyRule(pravilo3);
-  
-  // Pravilo 13
-  FuzzyRule* pravilo10 = new FuzzyRule(10, ifLijeviDalekoAndSrednjiDalekoAndDesniBlizu, thenTransBrzinaBrzoAndRotBrzinaSporoL);
-  izbjegavanje->addFuzzyRule(pravilo10);
-  
-    // Pravilo 12
-  FuzzyRule* pravilo12 = new FuzzyRule(12, ifLijeviDalekoAndSrednjiDalekoAndDesniSrednje, thenTransBrzinaBrzoAndRotBrzinaSporoL);
+  FuzzyRule* pravilo12 = new FuzzyRule(12, ifLijeviBlizuAndSrednjiDalekoAndDesniDaleko, thenTransBrzinaBrzoAndRotBrzinaSporoD);
   izbjegavanje->addFuzzyRule(pravilo12);
   
-    // Pravilo 13
-  FuzzyRule* pravilo13 = new FuzzyRule(13, ifLijeviSrednjeAndSrednjiDalekoAndDesniDaleko, thenTransBrzinaBrzoAndRotBrzinaSporoD);
+  // Pravilo 13
+  FuzzyRule* pravilo13 = new FuzzyRule(13, ifLijeviDalekoAndSrednjiDalekoAndDesniBlizu, thenTransBrzinaBrzoAndRotBrzinaSporoL);
   izbjegavanje->addFuzzyRule(pravilo13);
   
+    // Pravilo 14
+ FuzzyRule* pravilo14 = new FuzzyRule(14, ifLijeviDalekoAndSrednjiDalekoAndDesniSrednje, thenTransBrzinaBrzoAndRotBrzinaSporoL);
+ izbjegavanje->addFuzzyRule(pravilo14);
+  
+    // Pravilo 15
+ FuzzyRule* pravilo15 = new FuzzyRule(15, ifLijeviSrednjeAndSrednjiDalekoAndDesniDaleko, thenTransBrzinaBrzoAndRotBrzinaSporoD);
+ izbjegavanje->addFuzzyRule(pravilo15);
+  
   //fali daleko daleko srednje
-
+Serial.println(" ");
   // Setting timer interrupt
   cli();
   TCCR1A = 0;
@@ -381,8 +381,8 @@ void setup(){
   TIMSK1 |= (1 << OCIE1A);
   sei(); 
 
-  HC05.begin(9600);
-  HC05.println("Starting program in 5 seconds...");
+  Serial.begin(9600);
+  //Serial.println("Starting program in 5 seconds...");
   delay(5000);
 }
 
@@ -393,7 +393,7 @@ void loop(){
   digitalWrite(trigPinC, LOW);
   digitalWrite(trigPinD, LOW);
   delayMicroseconds(2);
-
+ 
   // set trigPin HIGH for 10 microsec
   digitalWrite(trigPinL, HIGH);
   delayMicroseconds(10);
@@ -417,15 +417,15 @@ void loop(){
 
   // read echoPin to recieve sound wave travel time in microsec
   durationD = pulseIn(echoPinD, HIGH); 
-
+ 
   // calculate the distance
-  distanceL = ((durationL/2) * 0.034) > 400 ? 400: ((durationL/2) * 0.034);
-  distanceC = ((durationC/2) * 0.034) > 400 ? 400: ((durationC/2) * 0.034);
-  distanceD = ((durationD/2) * 0.034) > 400 ? 400: ((durationD/2) * 0.034);
+//  distanceL = ((durationL/2) * 0.034) > 400 ? 400: ((durationL/2) * 0.034);
+//  distanceC = ((durationC/2) * 0.034) > 400 ? 400: ((durationC/2) * 0.034);
+//  distanceD = ((durationD/2) * 0.034) > 400 ? 400: ((durationD/2) * 0.034);
 
-  izbjegavanje->setInput(1,distanceL);  
-  izbjegavanje->setInput(2,distanceC);  
-  izbjegavanje->setInput(3, distanceD);
+  izbjegavanje->setInput(1,((durationL/2) * 0.034) > 400 ? 400: ((durationL/2) * 0.034));  
+  izbjegavanje->setInput(2,((durationC/2) * 0.034) > 400 ? 400: ((durationC/2) * 0.034));  
+  izbjegavanje->setInput(3, ((durationD/2) * 0.034) > 400 ? 400: ((durationD/2) * 0.034));
 
   izbjegavanje->fuzzify();
 
@@ -435,7 +435,8 @@ void loop(){
   ref_rpmL_d = out_transBrzina - 2.12 * out_rotBrzina; // 2.12 = L/(2*R) [m]
   ref_rpmR_d = out_transBrzina + 2.12 * out_rotBrzina;
 
-  cli();
+  //cli();
+
   // 165 = maxRPM for IR BOT
   if (max(ref_rpmL_d, ref_rpmR_d) > 165)
     ref_rpmL = ref_rpmL_d - (max(ref_rpmL_d, ref_rpmR_d) - 165);
@@ -448,26 +449,24 @@ void loop(){
   else if (min(ref_rpmL_d, ref_rpmR_d) < -165)
     ref_rpmR = ref_rpmR_d - (min(ref_rpmL_d, ref_rpmR_d) + 165);
   else ref_rpmR = ref_rpmR_d;
-  sei();
+  //sei();
 
-  HC05.print("Inputs: "); 
-  HC05.print(distanceL); 
-  HC05.print(" "); 
-  HC05.print(distanceC); 
-  HC05.print(" "); 
-  HC05.println(distanceD);
-  //  Serial.print("transB, rotB: "); Serial.print(out_transBrzina); Serial.print(" "); Serial.println(out_rotBrzina);
-  //  Serial.print("RPM desired L, R: "); Serial.print(ref_rpmL_d); Serial.print(" "); Serial.println(ref_rpmR_d);
-  //  Serial.print("RPM L, R: "); Serial.print(ref_rpmL); Serial.print(" "); Serial.println(ref_rpmR);
-  //  HC05.print("Left wheel: "); HC05.print(left_wheel); HC05.print(", right_wheel: "); HC05.println(right_wheel);
-  HC05.println(" ");
+  //Serial.println(freeMemory());
+
+  Serial.print(durationL * 0.017); 
+  Serial.print(" "); 
+  Serial.print(durationC * 0.017); 
+  Serial.print(" "); 
+  Serial.println(durationD * 0.017);
+  Serial.println("");
+
 }
 
 // Interrupt on A changing state
 void doEncoderR(){
   if ((unsigned long)(millis() - previousMillisR) >= 2){
     encoderPosR++;
-    previousMillisR = millis();
+    previousMillisR = millis();    
   }
 }
 
@@ -475,65 +474,54 @@ void doEncoderR(){
 void doEncoderL(){
   if ((unsigned long)(millis() - previousMillisL) >= 2){
     encoderPosL++;
-    previousMillisL = millis();
+    previousMillisL = millis();    
   }
 }
 
 ISR(TIMER1_COMPA_vect)
 {
-  // delta tick
-  rate_encL = encoderPosL;
-  rate_encR = encoderPosR;
-
   if ((ref_rpmL == 0)&&(ref_rpmR==0)){
-    u_left = 0;
-    u_right = 0;
-    update_speedL();
-    update_speedR();
+    update_speedL(0);
+    update_speedR(0);
   }
   else {
     // RPM
-    rpmL = sign(ref_rpmL) * 15 * rate_encL; // formula calculated for my sensor and time period of reading sensor data
-    rpmR = sign(ref_rpmR) * 15 * rate_encR;
-
-    if (abs(rpmL - ref_rpmL)>2){
-      u_left = calc_speedL(ref_rpmL - rpmL);
-      if (abs(u_left) > 255)
-        u_left = sign(u_left) * 255;
-      update_speedL(); 
-    }
-
-    if (abs(rpmR - ref_rpmR)>2){
-      u_right = calc_speedR(ref_rpmR - rpmR);
-      if (abs(u_right) > 255)
-        u_right = sign(u_right) * 255;
-      update_speedR(); 
-    } 
+    rpmL = sign(ref_rpmL) * 15 * encoderPosL; // formula calculated for my sensor and time period of reading sensor data
+    rpmR = sign(ref_rpmR) * 15 * encoderPosR;
+    
+    if (abs(rpmL - ref_rpmL)>2)
+      update_speedL(calc_speedL(ref_rpmL - rpmL));
+      
+    if (abs(rpmR - ref_rpmR)>2)
+      update_speedR(calc_speedR(ref_rpmR - rpmR));
+    
   }
   encoderPosL = 0;
-  encoderPosR = 0;  
+  encoderPosR = 0;
 }
 
 volatile int calc_speedL(volatile int err){
-  err_dotL = err - err_oldL;
+  //err_dotL = err - err_oldL;
   ErrL = err + ErrL;
-  err_oldL = err;
+  //err_oldL = err;
   //Serial.println(err);
   // Serial.print(Kp*err); Serial.print(" ");Serial.print(Ki*Err); Serial.print(" "); Serial.println(Kd * err_dot);
-  return (Kp*err + Ki*ErrL + Kd * err_dotL); 
+  volatile int output = Kp*err + Ki*ErrL; // + Kd * err_dotL;
+  return (abs(output) > 255 ? sign(output)*255:output); 
 }
 
 volatile int calc_speedR(volatile int err){
-  err_dotR = err - err_oldR;
+  //err_dotR = err - err_oldR;
   ErrR = err + ErrR;
-  err_oldR = err;
+  //err_oldR = err;
   //Serial.println(err);
   // Serial.print(Kp*err); Serial.print(" ");Serial.print(Ki*Err); Serial.print(" "); Serial.println(Kd * err_dot);
-  return (Kp*err + Ki*ErrR + Kd * err_dotR);  
+  volatile int output = Kp*err + Ki*ErrR ; //+ Kd * err_dotR;
+  return (abs(output) > 255 ? sign(output)*255:output);  
 }
 
-void update_speedL(){  
-  if (u_left >= 0){
+void update_speedL(volatile int motor_signalL){  
+  if (motor_signalL >= 0){
     digitalWrite(IN1, HIGH);
     digitalWrite(IN2, LOW);
   } 
@@ -541,11 +529,11 @@ void update_speedL(){
     digitalWrite(IN1, LOW);
     digitalWrite(IN2, HIGH);
   }
-  analogWrite(EN1, abs(u_left));
+  analogWrite(EN1, abs(motor_signalL));
 }
 
-void update_speedR(){  
-  if (u_right >= 0){
+void update_speedR(volatile int motor_signalR){  
+  if (motor_signalR >= 0){
     digitalWrite(IN3, HIGH);
     digitalWrite(IN4, LOW);
   }
@@ -553,11 +541,10 @@ void update_speedR(){
     digitalWrite(IN3, LOW);
     digitalWrite(IN4, HIGH);
   } 
-  analogWrite(EN2, abs(u_right));
+  analogWrite(EN2, abs(motor_signalR));
 }
 
 int sign(int x){
   return (x > 0) ? 1 : ((x < 0) ? -1 : 0);
 }
-
 
