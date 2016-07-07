@@ -1,5 +1,5 @@
+// Library that is used to determine amount of free  left
 #include <MemoryFree.h>
-#include <avr/pgmspace.h>
 
 // Include Fuzzy library elements - modified library -> set points are now of type int (more SRAM)
 #include <FuzzyRule.h>
@@ -34,11 +34,11 @@
 #define trigPinD A1
 
 // Define pins for motor control via L293D H bridge
-#define EN1 5    // Enable 1, definiran na PWM pinu - kontrola brzine
+#define EN1 5    // Enable 1, defined on PWM pin, for speed control
 #define IN1 9    // Input 1
 #define IN2 7    // Input 2
 
-#define EN2 6    // Enable 2, definiran na PWM pinu
+#define EN2 6    // Enable 2, defined on PWM pin
 #define IN3 8    // Input 3
 #define IN4 10   // Input 4
 
@@ -57,38 +57,32 @@ volatile unsigned long int previousMillisL = 0;
 volatile uint8_t encoderPosR = 0;  // a counter for the dial
 volatile uint8_t encoderPosL = 0;  // a counter for the dial
 
-// PID parameters and variables
+// PID parameters and variables, as I'm using PI controller, D parameters are commented out
 const float Kp = 0.5; 
 const float Ki = 0.2; 
 //const float Kd = 0;
 
-//volatile int err_oldL = 0;
+volatile int ErrR = 0;
 volatile int ErrL = 0;
+//volatile int err_oldL = 0;
 //volatile int err_dotL = 0;
 //volatile int err_oldR = 0;
-volatile int ErrR = 0;
 //volatile int err_dotR = 0;
 
-//volatile int u_left;
-//volatile int u_right;
-volatile int ref_rpmL_d = 0;
+volatile int ref_rpmL_d = 0; // desired referent RPM for left motor
 volatile int ref_rpmR_d = 0;
-volatile int ref_rpmL = 0;
+volatile int ref_rpmL = 0; // referent RPM for left motor, final value
 volatile int ref_rpmR = 0;
 volatile int rpmL;
 volatile int rpmR;
 
 // Define bluetooth serial connection
 SoftwareSerial HC05(4, 12);
-//int BluetoothData; // the data given from Computer
 
 // Define variables for reading ultrasonic sensor and transforming it to distance
 uint16_t durationL;
 uint16_t durationC;
 uint16_t durationD;
-//uint16_t distanceL;
-//uint16_t distanceC;
-//uint16_t distanceD;
 
 // Instantiating an object of library
 Fuzzy* izbjegavanje = new Fuzzy();
@@ -139,15 +133,15 @@ void setup(){
   pinMode(echoPinC, INPUT);
   pinMode(echoPinD, INPUT);
 
-  //Definicija pinova za upravljanje motorima
-  //Lijevi motor
+  // Define pins for motor control
+  // Left motor
   pinMode(EN1, OUTPUT);
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT); 
   analogWrite(EN1, 0);
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, LOW);
-  //Desni motor
+  // Right motor
   pinMode(EN2, OUTPUT);
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
@@ -155,7 +149,7 @@ void setup(){
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, LOW);
 
-  // FuzzyInput lijevi senzor
+  // FuzzyInput left sensor
   FuzzyInput* lijevi = new FuzzyInput(1);
   lijevi->addFuzzySet(dalekoL);
   lijevi->addFuzzySet(srednjeL);
@@ -163,7 +157,7 @@ void setup(){
 
   izbjegavanje->addFuzzyInput(lijevi);
 
-  // FuzzyInput srednji senzor
+  // FuzzyInput middle sensor
   FuzzyInput* centar = new FuzzyInput(2);
   centar->addFuzzySet(dalekoS);
   centar->addFuzzySet(srednjeS);
@@ -171,7 +165,7 @@ void setup(){
 
   izbjegavanje->addFuzzyInput(centar);
 
-  // FuzzyInput desni senzor
+  // FuzzyInput right sensor
   FuzzyInput* desni = new FuzzyInput(3);
   desni->addFuzzySet(dalekoD);
   desni->addFuzzySet(srednjeD);
@@ -179,7 +173,7 @@ void setup(){
 
   izbjegavanje->addFuzzyInput(desni);
 
-  // FuzzyOutput translacijska brzina
+  // FuzzyOutput translation speed
   FuzzyOutput* transBrzina = new FuzzyOutput(1);
 
   transBrzina->addFuzzySet(stani);  
@@ -189,7 +183,7 @@ void setup(){
 
   izbjegavanje->addFuzzyOutput(transBrzina);
 
-  // FuzzyOutput rotacijska brzina
+  // FuzzyOutput rotational speed
   FuzzyOutput* rotBrzina = new FuzzyOutput(2);
 
   rotBrzina->addFuzzySet(brzoD);
@@ -366,8 +360,6 @@ void setup(){
  FuzzyRule* pravilo15 = new FuzzyRule(15, ifLijeviSrednjeAndSrednjiDalekoAndDesniDaleko, thenTransBrzinaBrzoAndRotBrzinaSporoD);
  izbjegavanje->addFuzzyRule(pravilo15);
   
-  //fali daleko daleko srednje
-Serial.println(" ");
   // Setting timer interrupt
   cli();
   TCCR1A = 0;
@@ -418,12 +410,8 @@ void loop(){
   // read echoPin to recieve sound wave travel time in microsec
   durationD = pulseIn(echoPinD, HIGH); 
  
-  // calculate the distance
-//  distanceL = ((durationL/2) * 0.034) > 400 ? 400: ((durationL/2) * 0.034);
-//  distanceC = ((durationC/2) * 0.034) > 400 ? 400: ((durationC/2) * 0.034);
-//  distanceD = ((durationD/2) * 0.034) > 400 ? 400: ((durationD/2) * 0.034);
-
-  izbjegavanje->setInput(1,((durationL/2) * 0.034) > 400 ? 400: ((durationL/2) * 0.034));  
+  // set inputs for fuzzy controller
+  izbjegavanje->setInput(1,((durationL/2) * 0.034) > 400 ? 400: ((durationL/2) * 0.034));  // (durationL/2) * 0.034 calculates distance from obstacle in [cm]
   izbjegavanje->setInput(2,((durationC/2) * 0.034) > 400 ? 400: ((durationC/2) * 0.034));  
   izbjegavanje->setInput(3, ((durationD/2) * 0.034) > 400 ? 400: ((durationD/2) * 0.034));
 
