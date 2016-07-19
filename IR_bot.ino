@@ -76,6 +76,8 @@ volatile int ref_rpmR = 0;
 volatile int rpmL;
 volatile int rpmR;
 
+boolean update_speed_flag = 0;
+
 // Define bluetooth serial connection
 SoftwareSerial HC05(4, 12);
 
@@ -438,6 +440,9 @@ void loop(){
     ref_rpmR = ref_rpmR_d - (min(ref_rpmL_d, ref_rpmR_d) + 165);
   else ref_rpmR = ref_rpmR_d;
   //sei();
+  
+  if (update_speed_flag)
+    control_motor_speed();
 
   //Serial.println(freeMemory());
 
@@ -468,6 +473,11 @@ void doEncoderL(){
 
 ISR(TIMER1_COMPA_vect)
 {
+  update_speed_flag = 1;
+}
+  
+  
+void control_motor_speed(){
   if ((ref_rpmL == 0)&&(ref_rpmR==0)){
     update_speedL(0);
     update_speedR(0);
@@ -486,6 +496,7 @@ ISR(TIMER1_COMPA_vect)
   }
   encoderPosL = 0;
   encoderPosR = 0;
+  update_speed_flag = 0;
 }
 
 volatile int calc_speedL(volatile int err){
